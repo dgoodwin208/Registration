@@ -9,8 +9,8 @@ params.REGISTERCHANNEL ='488';
 %In the Murray et al 2015 this was {'Lectin', 'DAPI', 'Data}
 params.CHANNELS = {'488'}; 
 
-params.INPUTDIR = '/Users/Goody/Neuro/ExM/RNAReg/input/'; 
-params.OUTPUTDIR = '/Users/Goody/Neuro/ExM/RNAReg/output/';
+params.INPUTDIR = '../../input/'; 
+params.OUTPUTDIR = '../../output/';
 
 params.OVERLAP = .2; %used to be 10%
 
