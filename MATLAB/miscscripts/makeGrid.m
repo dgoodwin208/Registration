@@ -3,7 +3,7 @@ function [ gridimg ] = makeGrid( dims )
 %   dims are the shape of the 3D tif that you want to mimic
 
 gridimg =  zeros(dims);
-xyspacing = 40;
+xyspacing = 100;
 zspacing = 10;
 %get the vertical lines
 indices = 1:size(gridimg,1);

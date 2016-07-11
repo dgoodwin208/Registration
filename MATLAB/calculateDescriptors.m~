@@ -123,28 +123,16 @@ for x_idx=1:params.COLS_DESC
         %the x and y back to my convention while also putting
         %the discovered keypoints back into global coodinates
         
-        indices_to_remove = [];
         for key_idx=1:length(keys)
             temp_key = keys{key_idx};
             temp_key.y = keys{key_idx}.x;
             temp_key.x = keys{key_idx}.y;
             
-            if temp_key.y < params.OVERLAP/2 || ...
-               temp_key.x < params.OVERLAP/2 || ...
-               temp_key.y > ymax - ymin || ...
-               temp_key.x > xmax - xmin
-               
-                indices_to_remove = [indices_to_remove key_idx];
-            else
-                %set the new key coords:
-                keys{key_idx}.y = temp_key.y;
-                keys{key_idx}.x = temp_key.x;
-            end
+            %set the new key coords:
+            keys{key_idx}.y = temp_key.y;
+            keys{key_idx}.x = temp_key.x;
+            
         end
-        
-        %Remove any keys that were in the overlapping region.
-        keys{indices_to_remove} = [];
-        fprintf('Removed %i keypoints from the overlapping region\n',length(indices_to_remove));
         
         save(outputfilename,'keys','ymin','xmin','ymax','xmax', 'params','run_num');
         

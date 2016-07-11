@@ -65,7 +65,7 @@ function registerWithDescriptors(moving_run)
             keys_ctr = keys_ctr+ 1;
         end
     end
-
+    
     %Load all descriptors for the FIXED channel
     descriptor_output_dir_fixed = fullfile(params.OUTPUTDIR,sprintf('%sround%d_%s/',params.SAMPLE_NAME, ...
                                             params.FIXED_RUN,params.REGISTERCHANNEL));
@@ -203,20 +203,21 @@ function registerWithDescriptors(moving_run)
                 
                 try
                     calc_affine;
+                    %calc_affine produces keyM and keyF, pairs of point correspondences
+                    %from the robust model fitting. The math is done with local
+                    %coordinates to the subvolume, so it needs to be adapted to global
+                    %points
+
+                    keyM_total = [keyM_total; keyM(:,1) + ymin_moving, keyM(:,2) + xmin_moving, keyM(:,3) ];
+                    keyF_total = [keyF_total; keyF(:,1) + ymin_fixed, keyF(:,2) + xmin_fixed, keyF(:,3)];
+                
                 catch
-                    disp(['Cannot process image index: ' num2str(y_idx) ' ' num2str(x_idx)])
+                    disp(['Cannot process sub-image index: ' num2str(y_idx) ' ' num2str(x_idx)])
                     continue;
                 end
                 % ----------- END ---------- %
                 
                 
-                %calc_affine produces keyM and keyF, pairs of point correspondences
-                %from the robust model fitting. The math is done with local
-                %coordinates to the subvolume, so it needs to be adapted to global
-                %points
-                
-                keyM_total = [keyM_total; keyM(:,1) + ymin_moving, keyM(:,2) + xmin_moving, keyM(:,3) ];
-                keyF_total = [keyF_total; keyF(:,1) + ymin_fixed, keyF(:,2) + xmin_fixed, keyF(:,3)];
                 
             end
         end

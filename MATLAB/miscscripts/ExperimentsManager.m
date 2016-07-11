@@ -3,16 +3,21 @@
 % 
 % First, get the experiment numbers
 
-function [experiments,crops,keypts,registrations,cell_detections] = ExperimentsManager( sample_num )
+function [experiments,crops,keypts,registrations,cell_detections] = ExperimentsManager()
 loadExperimentParams;
 
-files = dir(fullfile(params.INPUTDIR,sprintf('sample%d*.tif', sample_num)));
+% filename = fullfile(params.INPUTDIR,sprintf('%sround%d_%s.tif',...
+%     params.SAMPLE_NAME,params.MOVING_RUN,params.REGISTERCHANNEL));
+
+% files = dir(fullfile(params.INPUTDIR,sprintf('%sround%d*.tif',params.SAMPLE_NAME,sample_num)));
+files = dir(fullfile(params.INPUTDIR,sprintf('%sround%d*.tif',...
+    params.SAMPLE_NAME,sample_num)));
 
 experiments = [];
 for file_idx = 1:length(files)
     filename = files(file_idx).name;
     underscore = strsplit(filename,'_'); 
-    rounds = strsplit(underscore{1},'round');
+    rounds = strsplit(underscore{2},'round');
     experiments(file_idx) = str2num(rounds{2});
 end
 
@@ -24,7 +29,7 @@ registrations = [];
 cell_detections = [];
 
 for exp_idx= 1:length(experiments)
-    filename = fullfile(params.OUTPUTDIR, sprintf('sample%dround%d_cropbounds.mat', sample_num, experiments(exp_idx)));
+    filename = fullfile(params.OUTPUTDIR, sprintf('%s%dround%d_cropbounds.mat', params.SAMPLE_NAME,sample_num, experiments(exp_idx)));
     crops(exp_idx) = exist(filename,'file') >0;
 end
 

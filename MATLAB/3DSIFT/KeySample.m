@@ -188,6 +188,7 @@ islice = int16(padfactort+1);
 
 translate_matrix_fwd = double([eye(4,3), [-irow; -icol; -islice; 1]]);
 translate_matrix_back = double([eye(4,3), [irow; icol; islice; 1]]);
+
 %Rotate that subregion
 tformObj = affine3d(translate_matrix_fwd' * rotate_matrix' * translate_matrix_back');
 Rcb = imref3d(size(subpix));

@@ -5,7 +5,11 @@
 %without specifying, MATLAB uses 
 parpool(); 
 loadExperimentParams;
-experiment_number_to_process = 1;
-parfor i = 1:params.ROWS_DESC*params.COLS_DESC
-    CalculateDescriptorsForTileAtIndices(experiment_number_to_process ,i,i);
+round_number_to_process = 2;
+
+parfor i = 7:params.ROWS_DESC*params.COLS_DESC
+    calculateDescriptors(round_number_to_process,i,i);
 end
+
+poolobj = gcp('nocreate');
+delete(poolobj);
