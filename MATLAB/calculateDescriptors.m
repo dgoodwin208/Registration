@@ -92,10 +92,10 @@ for x_idx=1:params.COLS_DESC
         % create overlap region for calcuating features
         % will remove all points in the overlap region after calculation
         % but this avoids edge effects on any boundaries of 
-        ymin_overlap = floor(max(tile_upperleft_y_fixed(y_idx)-(params.OVERLAP/2)*tilesize_fixed(1),1));
-        ymax_overlap = floor(min(tile_upperleft_y_fixed(y_idx+1)+(params.OVERLAP/2)*tilesize_fixed(1),size(imgFixed_total,1)));
-        xmin_overlap = floor(max(tile_upperleft_x_fixed(x_idx)-(params.OVERLAP/2)*tilesize_fixed(2),1));
-        xmax_overlap = floor(min(tile_upperleft_x_fixed(x_idx+1)+(params.OVERLAP/2)*tilesize_fixed(2),size(imgFixed_total,2)));
+        ymin_overlap = floor(max(tile_upperleft_y(y_idx)-(params.OVERLAP/2)*(ymax-ymin),1));
+        ymax_overlap = floor(min(tile_upperleft_y(y_idx+1)+(params.OVERLAP/2)*(ymax-ymin),size(img,1)));
+        xmin_overlap = floor(max(tile_upperleft_x(x_idx)-(params.OVERLAP/2)*(xmax-xmin),1));
+        xmax_overlap = floor(min(tile_upperleft_x(x_idx+1)+(params.OVERLAP/2)*(xmax-xmin),size(img,2)));
              
         %Calculate the features on the larger (overlapping) regions
         tile_img = img(ymin_overlap:ymax_overlap, xmin_overlap:xmax_overlap,:);
