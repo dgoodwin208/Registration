@@ -143,9 +143,14 @@ for x_idx=1:params.COLS_DESC
         end
         
         %Remove any keys that were in the overlapping region.
-        keys{indices_to_remove} = [];
-        fprintf('Removed %i keypoints from the overlapping region\n',length(indices_to_remove));
-        
+%         keys{indices_to_remove} = [];
+%         fprintf('Removed %i keypoints from the overlapping region\n',length(indices_to_remove));
+        final_indices = ones(length(keys),1);
+        final_indices(indices_to_remove)=0;
+        keys = keys(logical(final_indices));
+        fprintf('Removed %i/%i keypoints from the overlapping region\n',length(indices_to_remove),length(keys));
+
+
         save(outputfilename,'keys','ymin','xmin','ymax','xmax', 'params','run_num');
         
         clear keys;

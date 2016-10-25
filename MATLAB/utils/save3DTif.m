@@ -10,7 +10,7 @@ function  out_img = save3DTif(imgvol, outputFileName)
     imgvol = uint16(imgvol);
     
     
-    if exist(outputFileName)
+    if exist(outputFileName,'file')
         delete(outputFileName);
     end
     

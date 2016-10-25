@@ -12,7 +12,7 @@ output_keys_filename = fullfile(params.OUTPUTDIR,sprintf('globalkeys_%sround%d.m
 
 load(output_keys_filename);
 %% Create  plot of all the feature + correspondences
-figure(1);
+figure;
 
 plot3(keyF_total(:,1),keyF_total(:,2),keyF_total(:,3),'o');
 hold on;
@@ -36,8 +36,8 @@ for k_idx=1:size(keyF_total,1)
      plot3(lines(:,1),lines(:,2),lines(:,3),'color',rgb);   
 end
 legend('Fixed', 'Moving');
-
-view(90,90);
+title(sprintf('%i correspondences to calculate TPS warp',size(keyF_total,1)))
+view(45,45);
 
 %% 2D Plotting:
 

@@ -56,13 +56,16 @@ function registerWithDescriptors(moving_run)
         %The data for each tile is keys, xmin, xmax, ymin, ymax
         data = load(fullfile(descriptor_output_dir_moving,filename));
         for idx=1:length(data.keys)
-            
+            try
             %copy all the keys into one large vector of cells
             keys_moving_total{keys_ctr} = data.keys{idx};
             keys_moving_total{keys_ctr}.x = data.keys{idx}.x + data.xmin-1;
             keys_moving_total{keys_ctr}.y = data.keys{idx}.y + data.ymin-1;
             
             keys_ctr = keys_ctr+ 1;
+            catch
+                fprintf('TEMPERROR in filename %s',filename);
+            end
         end
     end
     
@@ -228,6 +231,20 @@ function registerWithDescriptors(moving_run)
         load(output_keys_filename);
     end
 
+    % Do we filter on maximum displacements in coordinate space?
+    % For some data this might be useful
+    if (params.MAXDISTANCE>-1)
+        remove_indices = [];
+        for match_idx = 1:size(keyF_total,1)
+           if norm(keyF_total(match_idx,:)-keyM_total(match_idx,:))>params.MAXDISTANCE
+            remove_indices = [remove_indices match_idx];
+           end
+        end
+        keyF_total(remove_indices,:) = [];
+        keyM_total(remove_indices,:) = [];
+        clear remove_indices;
+    end
+    
   
     output_TPS_filename = fullfile(params.OUTPUTDIR,sprintf('TPSMap_%sround%d.mat',params.SAMPLE_NAME,params.MOVING_RUN));
     if exist(output_TPS_filename,'file')==0

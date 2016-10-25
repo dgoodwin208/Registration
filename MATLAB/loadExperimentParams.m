@@ -1,18 +1,22 @@
 
-params.SAMPLE_NAME = 'ROI3';
+params.SAMPLE_NAME = 'sa0916dncv_';
 params.FIXED_RUN = 1;
 params.MOVING_RUN = 2;
 
-params.DATACHANNEL = '561';
-params.REGISTERCHANNEL ='488';
+params.DATACHANNEL = 'summed';
+params.REGISTERCHANNEL ='summed';
 
 %In the Murray et al 2015 this was {'Lectin', 'DAPI', 'Data}
-params.CHANNELS = {'488','561','640'}; 
+params.CHANNELS = {'sum'}; 
 
-params.INPUTDIR = '../../input/'; 
-params.OUTPUTDIR = '../../output/';
+params.INPUTDIR = '../../ExSeq/input/';
+params.OUTPUTDIR = '../../ExSeq/output/';
 
 params.OVERLAP = .1; %used to be 10%
+
+%Set a threshold for maximum displacement distance?
+%(not appropriate for all datasets. Distance in pixels, -1 for ignore this)
+params.MAXDISTANCE = 200;
 
 %how many subsections to calculate the descriptors?
 params.ROWS_DESC = 3;
