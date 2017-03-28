@@ -1,3 +1,6 @@
+global TwoPeak_Flag IndexSize Display_flag Tessellation_flag Tessellation_levels nFaces Smooth_Flag Smooth_Var;
+global IgnoreGradSign IndexSigma MagFactor UseHistogramOri OriHistThresh OriSigma;
+
 TwoPeak_Flag = 1;  % Allow 3DSIFT to throw out points, Default: 1
 IndexSize = 2;  % Min: 1  Default: 2 
 

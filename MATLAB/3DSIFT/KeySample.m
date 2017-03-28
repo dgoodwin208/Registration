@@ -1,6 +1,6 @@
 function index = KeySample(key, pix)
 
-LoadParams;
+global Tessellation_levels MagFactor IndexSize nFaces;
 
 fv = sphere_tri('ico',Tessellation_levels,1);
 

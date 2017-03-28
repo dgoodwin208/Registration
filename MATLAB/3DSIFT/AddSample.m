@@ -1,6 +1,6 @@
 function index = AddSample(index, pix, distsq, r, c, s, i_indx, j_indx, s_indx, fv)
 
-LoadParams;
+global IndexSigma IndexSize;
 
 if (r < 1  ||  r > size(pix,1)  ||  c < 1  ||  c > size(pix,2) || s < 1 || s > size(pix,3))
     return;
