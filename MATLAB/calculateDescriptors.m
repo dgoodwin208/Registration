@@ -153,7 +153,8 @@ for x_idx=1:params.COLS_DESC
         if exist(outputfilename,'file')>0 %Make sure that the descriptors have been calculated!
             continue;
         else
-            keys = SWITCH_tile_processing(tile_img);
+            %keys = SWITCH_tile_processing(tile_img);
+            keys = SWITCH_tile_processingInParallel(tile_img);
         end
         
         %There is a different terminology for the x,y coordinates that

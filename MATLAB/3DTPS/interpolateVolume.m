@@ -41,7 +41,8 @@ outputImage = inputImage;
 %around areas of high contrast). interp_radius of 2 is slower (within one order of magnitude) 
 %but has better results
 interp_radius = 2;
-interpolated_rect = nearestInterp(rect_section, map, interp_radius );
+interpolated_rect = nearestInterpInParallel(rect_section, map, interp_radius );
+%interpolated_rect = nearestInterp(rect_section, map, interp_radius );
 
 outputImage(min(mask_y):max(mask_y), min(mask_x):max(mask_x), :) = interpolated_rect ;
 

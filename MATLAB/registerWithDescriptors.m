@@ -245,15 +245,27 @@ function registerWithDescriptors(moving_run)
         clear remove_indices;
     end
     
-  
+    disp('set up cluster and parpool')
+    tic;
+    cluster = parcluster('local_96workers');
+    parpool(cluster,24)
+    toc;
+
     output_TPS_filename = fullfile(params.OUTPUTDIR,sprintf('TPSMap_%sround%d.mat',params.SAMPLE_NAME,params.MOVING_RUN));
     if exist(output_TPS_filename,'file')==0
-        [in1D_total,out1D_total] = TPS3DWarpWhole(keyM_total,keyF_total, ...
+%        [in1D_total,out1D_total] = TPS3DWarpWhole(keyM_total,keyF_total, ...
+        [in1D_total,out1D_total] = TPS3DWarpWholeInParallel(keyM_total,keyF_total, ...
                             size(imgMoving_total), size(imgFixed_total));
+        disp('save TPS file')
+        tic;
         save(output_TPS_filename,'in1D_total','out1D_total','-v7.3');
+        toc;
     else
         %load in1D_total and out1D_total
+        disp('load TPS file')
+        tic;
         load(output_TPS_filename);
+        toc;
         %Experiments 7 and 8 may have been saved with zeros in the 1D vectors
         %so this removes it
         [ValidIdxs,I] = find(in1D_total>0);
@@ -269,9 +281,12 @@ function registerWithDescriptors(moving_run)
     %created
     for c = 1:length(params.CHANNELS)
         %Load the data to be warped
+        disp('load 3D file to be moved')
+        tic;
         data_channel = params.CHANNELS{c};
         filename = fullfile(params.INPUTDIR,sprintf('%sround%d_%s.tif',params.SAMPLE_NAME,params.MOVING_RUN,data_channel));
         imgToWarp = load3DTif(filename);
+        toc;
         
         %we loaded the bounds_moving data at the very beginning of this file
         if exist(cropfilename,'file')==2
@@ -282,6 +297,12 @@ function registerWithDescriptors(moving_run)
         outputdir = fullfile(params.OUTPUTDIR,sprintf('TPS%sround%d_%s',params.SAMPLE_NAME,params.MOVING_RUN,data_channel));
         saveTifSequence(outputImage_interp,outputdir);
     end
+
+    disp('delete parpool')
+    tic;
+    p = gcp('nocreate');
+    delete(p);
+    toc;
 
 
 
