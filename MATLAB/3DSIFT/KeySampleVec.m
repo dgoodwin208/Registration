@@ -1,5 +1,4 @@
 function vec = KeySampleVec(key, pix)
-LoadParams;
 
 
 % DG's Addition: Method 1 with rotational invariance added in:

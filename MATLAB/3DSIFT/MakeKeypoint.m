@@ -11,7 +11,6 @@ end
 
 function key = MakeKeypointSample(key, pix)
 
-LoadParams;
 
 MaxIndexVal = 0.2;
 changed = 0;

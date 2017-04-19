@@ -1,5 +1,5 @@
 function myhist = buildOriHists(x,y,z,radius,pix,fv)
-LoadParams;
+global Display_flag nFaces;
 
 if (Display_flag ==1)
     figure;

@@ -86,14 +86,17 @@ disp('running getting Rmax')
 
 kappa = 1/27; %Magic number from the paper
 margin = floor(.1*size(test_img,3));
-for i = margin:height-margin
-    for j = margin:width - margin
-        for k = margin:depth - margin
-                M = [Ix2(i,j,k) Ixy(i,j,k) Ixz(i,j,k); Ixy(i,j,k) Iy2(i,j,k) Iyz(i,j,k); Ixz(i,j,k) Iyz(i,j,k) Iz2(i,j,k)]; 
-                R(i,j,k) = det(M)-kappa*(trace(M))^2;
-        end;
-    end;
-end;
+
+% det(M) - kappa*trace(M)^2
+R = Ix2.*(Iy2.*Iz2-Iyz.*Iyz)-Ixy.*(Ixy.*Iz2-Ixz.*Iyz)+Ixz.*(Ixy.*Iyz-Ixz.*Iy2)-kappa*(Ix2+Iy2+Iz2).^2;
+
+% Clip R with margin
+R(1:margin-1,:,:) = 0;
+R(height-margin+1:height,:,:) = 0;
+R(:,1:margin-1,:) = 0;
+R(:,width-margin+1:width,:) = 0;
+R(:,:,1:margin-1) = 0;
+R(:,:,depth-margin+1:depth) = 0;
 
 
 vecsort = sort(R(:),'descend');

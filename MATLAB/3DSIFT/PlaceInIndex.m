@@ -1,6 +1,6 @@
 function index = PlaceInIndex(index, mag, vect, i, j, s, fv)
 
-LoadParams;
+global Smooth_Flag Smooth_Var;
 
 %Find the nearest tesselation face indices
 corr_array = fv.centers * vect';

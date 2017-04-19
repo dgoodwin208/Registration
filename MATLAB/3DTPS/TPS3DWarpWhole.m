@@ -86,11 +86,7 @@ for y = 1:length(y_grid)-1
             pntsNum=size(inputgrid,1); 
             K = zeros(pntsNum, npnts);
 
-            for nn = 1:npnts
-                K(:,nn) = (inputgrid(:,1) - keyM(nn,1)).^2 + (inputgrid(:,2) - keyM(nn,2) ).^2 + (inputgrid(:,3) - keyM(nn,3) ).^2; % R^2
-            end;
-            K = max(K,1e-320); 
-            K = sqrt(K); %|R| for 3D
+            K = pdist2(inputgrid, keyM, 'euclidean'); %|R| for 3D
 
             P = [ones(pntsNum,1), inputgrid(:,1), inputgrid(:,2), inputgrid(:,3)];
             L = [K, P];
