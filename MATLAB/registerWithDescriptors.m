@@ -19,25 +19,25 @@ function registerWithDescriptors(moving_run)
 
     disp(['RUNNING ON MOVING: ' num2str(params.MOVING_RUN) ', FIXED: ' num2str(params.FIXED_RUN) ', ' params.DATACHANNEL])
 
-    filename = fullfile(params.INPUTDIR,sprintf('%sround%d_%s.tif',...
+    filename = fullfile(params.INPUTDIR,sprintf('%sround%03d_%s.tif',...
                         params.SAMPLE_NAME,params.FIXED_RUN,params.DATACHANNEL));
 
     imgFixed_total = load3DTif(filename);
 
 
-    filename = fullfile(params.INPUTDIR,sprintf('%sround%d_%s.tif',...
+    filename = fullfile(params.INPUTDIR,sprintf('%sround%03d_%s.tif',...
                         params.SAMPLE_NAME,params.MOVING_RUN,params.DATACHANNEL));
     
     imgMoving_total = load3DTif(filename);
 
     %LOAD FILES WITH CROP INFORMATION, CROP LOADED FILES
-    cropfilename = fullfile(params.OUTPUTDIR,sprintf('%sround%d_cropbounds.mat',params.SAMPLE_NAME,params.FIXED_RUN));
+    cropfilename = fullfile(params.OUTPUTDIR,sprintf('%sround%03d_cropbounds.mat',params.SAMPLE_NAME,params.FIXED_RUN));
     if exist(cropfilename,'file')==2
         load(cropfilename,'bounds'); bounds_fixed = floor(bounds); clear bounds;
         imgFixed_total = imgFixed_total(bounds_fixed(1):bounds_fixed(2),bounds_fixed(3):bounds_fixed(4),:);        
     end
     
-    cropfilename = fullfile(params.OUTPUTDIR,sprintf('%sround%d_cropbounds.mat',params.SAMPLE_NAME,params.MOVING_RUN));
+    cropfilename = fullfile(params.OUTPUTDIR,sprintf('%sround%03d_cropbounds.mat',params.SAMPLE_NAME,params.MOVING_RUN));
     if exist(cropfilename,'file')==2
         load(cropfilename,'bounds'); bounds_moving = floor(bounds); clear bounds;
         imgMoving_total = imgMoving_total(bounds_moving(1):bounds_moving(2),bounds_moving(3):bounds_moving(4),:);
@@ -45,7 +45,7 @@ function registerWithDescriptors(moving_run)
 
     %------------------------------Load Descriptors -------------------------%
     %Load all descriptors for the MOVING channel
-    descriptor_output_dir_moving = fullfile(params.OUTPUTDIR,sprintf('%sround%d_%s/',params.SAMPLE_NAME, ...
+    descriptor_output_dir_moving = fullfile(params.OUTPUTDIR,sprintf('%sround%03d_%s/',params.SAMPLE_NAME, ...
                                             params.MOVING_RUN,params.REGISTERCHANNEL));
 
     files = dir(fullfile(descriptor_output_dir_moving,'*.mat'));
@@ -70,9 +70,9 @@ function registerWithDescriptors(moving_run)
     end
     
     %Load all descriptors for the FIXED channel
-    descriptor_output_dir_fixed = fullfile(params.OUTPUTDIR,sprintf('%sround%d_%s/',params.SAMPLE_NAME, ...
+    descriptor_output_dir_fixed = fullfile(params.OUTPUTDIR,sprintf('%sround%03d_%s/',params.SAMPLE_NAME, ...
                                             params.FIXED_RUN,params.REGISTERCHANNEL));
-    %descriptor_output_dir_fixed = fullfile(params.OUTPUTDIR,sprintf('sample%dround%d_%s/',params.SAMPLE_NUM,params.FIXED_RUN,params.REGISTERCHANNEL));
+    %descriptor_output_dir_fixed = fullfile(params.OUTPUTDIR,sprintf('sample%dround%03d_%s/',params.SAMPLE_NUM,params.FIXED_RUN,params.REGISTERCHANNEL));
 
     files = dir(fullfile(descriptor_output_dir_fixed,'*.mat'));
     keys_fixed_total = {}; keys_ctr=1;
@@ -115,7 +115,7 @@ function registerWithDescriptors(moving_run)
     %Because it takes about 5-10 minutes to generate the global list of vetted
     %keys, after we generate them we now save them in the output_keys_filename
     %if it's aready been generated, we can skip directly to the TPS calculation
-    output_keys_filename = fullfile(params.OUTPUTDIR,sprintf('globalkeys_%sround%d.mat',params.SAMPLE_NAME,params.MOVING_RUN));
+    output_keys_filename = fullfile(params.OUTPUTDIR,sprintf('globalkeys_%sround%03d.mat',params.SAMPLE_NAME,params.MOVING_RUN));
 
     %If we need to run the robust model checking to identify correct
     %correspondences
@@ -251,7 +251,7 @@ function registerWithDescriptors(moving_run)
     parpool(cluster,24)
     toc;
 
-    output_TPS_filename = fullfile(params.OUTPUTDIR,sprintf('TPSMap_%sround%d.mat',params.SAMPLE_NAME,params.MOVING_RUN));
+    output_TPS_filename = fullfile(params.OUTPUTDIR,sprintf('TPSMap_%sround%03d.mat',params.SAMPLE_NAME,params.MOVING_RUN));
     if exist(output_TPS_filename,'file')==0
 %        [in1D_total,out1D_total] = TPS3DWarpWhole(keyM_total,keyF_total, ...
         [in1D_total,out1D_total] = TPS3DWarpWholeInParallel(keyM_total,keyF_total, ...
@@ -284,7 +284,7 @@ function registerWithDescriptors(moving_run)
         disp('load 3D file to be moved')
         tic;
         data_channel = params.CHANNELS{c};
-        filename = fullfile(params.INPUTDIR,sprintf('%sround%d_%s.tif',params.SAMPLE_NAME,params.MOVING_RUN,data_channel));
+        filename = fullfile(params.INPUTDIR,sprintf('%sround%03d_%s.tif',params.SAMPLE_NAME,params.MOVING_RUN,data_channel));
         imgToWarp = load3DTif(filename);
         toc;
         
@@ -294,8 +294,8 @@ function registerWithDescriptors(moving_run)
         end
         [ outputImage_interp ] = TPS3DApply(in1D_total,out1D_total,imgToWarp,size(imgFixed_total));
         
-        outputdir = fullfile(params.OUTPUTDIR,sprintf('TPS%sround%d_%s',params.SAMPLE_NAME,params.MOVING_RUN,data_channel));
-        saveTifSequence(outputImage_interp,outputdir);
+        outputfile = fullfile(params.OUTPUTDIR,sprintf('%sround%03d_%s_registered.tif',params.SAMPLE_NAME,params.MOVING_RUN,data_channel));
+        save3DTif(outputImage_interp,outputfile);
     end
 
     disp('delete parpool')

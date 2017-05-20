@@ -47,12 +47,12 @@ target_indices = start_idx:end_idx;
 
 %Loading the tif file associated with the reference channel (ie,
 %Lectin) for the image specified by run_num
-filename = fullfile(params.INPUTDIR,sprintf('%sround%d_%s.tif',...
+filename = fullfile(params.INPUTDIR,sprintf('%sround%03d_%s.tif',...
     params.SAMPLE_NAME,run_num,params.REGISTERCHANNEL));
 img = load3DTif(filename);
 
 
-cropfilename = fullfile(params.OUTPUTDIR,sprintf('%sround%d_cropbounds.mat',params.SAMPLE_NAME,run_num));
+cropfilename = fullfile(params.OUTPUTDIR,sprintf('%sround%03d_cropbounds.mat',params.SAMPLE_NAME,run_num));
 if exist(cropfilename,'file')==2
     load(cropfilename,'bounds');
     img = img(bounds(1):bounds(2),bounds(3):bounds(4),:);
@@ -114,7 +114,7 @@ for x_idx=1:params.COLS_DESC
         disp(['Running on row ' num2str(y_idx) ' and col ' num2str(x_idx) ]);
         
         %Make sure the folders for the descriptor outputs exist:
-        descriptor_output_dir = fullfile(params.OUTPUTDIR,sprintf('%sround%d_%s/',params.SAMPLE_NAME,run_num,params.REGISTERCHANNEL));
+        descriptor_output_dir = fullfile(params.OUTPUTDIR,sprintf('%sround%03d_%s/',params.SAMPLE_NAME,run_num,params.REGISTERCHANNEL));
         if exist(descriptor_output_dir,'dir')==0
             mkdir(descriptor_output_dir);
         end
