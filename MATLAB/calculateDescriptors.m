@@ -39,8 +39,8 @@ elseif size(varargin,2)==2
 else
     start_idx = 1; end_idx = params.COLS_DESC*params.ROWS_DESC;
 end
-    
-    
+
+
 target_indices = start_idx:end_idx;
 
 
@@ -52,7 +52,7 @@ filename = fullfile(params.INPUTDIR,sprintf('%sround%03d_%s.tif',...
 img = load3DTif(filename);
 
 
-cropfilename = fullfile(params.OUTPUTDIR,sprintf('%sround%03d_cropbounds.mat',params.SAMPLE_NAME,run_num));
+cropfilename = fullfile(params.OUTPUTDIR,sprintf('%sround%d_cropbounds.mat',params.SAMPLE_NAME,run_num));
 if exist(cropfilename,'file')==2
     load(cropfilename,'bounds');
     img = img(bounds(1):bounds(2),bounds(3):bounds(4),:);
@@ -64,40 +64,43 @@ end
 tile_upperleft_y = floor(linspace(1,size(img,1),params.ROWS_DESC+1));
 tile_upperleft_x = floor(linspace(1,size(img,2),params.COLS_DESC+1));
 
-img_cache = containers.Map('KeyType','int32','ValueType','any');
+% Commenting out this optimization from Atsushi, only because I don't
+% understand how/why this beneficial
 
-if length(target_indices) < params.ROWS_DESC*params.COLS_DESC*0.5 % magic number
-    for x_idx=1:params.COLS_DESC
-        for y_idx=1:params.ROWS_DESC
-            tile_counter = (x_idx-1)*params.ROWS_DESC+y_idx;
-
-            % only run kypts+descriptors for specified indices
-            if ~ismember(tile_counter,target_indices)
-                continue
-            end
-
-            % get region, indexing column-wise
-            ymin = tile_upperleft_y(y_idx);
-            ymax = tile_upperleft_y(y_idx+1);
-            xmin = tile_upperleft_x(x_idx);
-            xmax = tile_upperleft_x(x_idx+1);
-
-            % create overlap region for calcuating features
-            % will remove all points in the overlap region after calculation
-            % but this avoids edge effects on any boundaries of
-            ymin_overlap = floor(max(tile_upperleft_y(y_idx)-(params.OVERLAP/2)*(ymax-ymin),1));
-            ymax_overlap = floor(min(tile_upperleft_y(y_idx+1)+(params.OVERLAP/2)*(ymax-ymin),size(img,1)));
-            xmin_overlap = floor(max(tile_upperleft_x(x_idx)-(params.OVERLAP/2)*(xmax-xmin),1));
-            xmax_overlap = floor(min(tile_upperleft_x(x_idx+1)+(params.OVERLAP/2)*(xmax-xmin),size(img,2)));
-
-            %Calculate the features on the larger (overlapping) regions
-            img_cache(tile_counter) = img(ymin_overlap:ymax_overlap, xmin_overlap:xmax_overlap,:);
-
-        end
-    end
-
-    clearvars img;
-end
+% img_cache = containers.Map('KeyType','int32','ValueType','any');
+%
+% if length(target_indices) < params.ROWS_DESC*params.COLS_DESC*0.5 % magic number
+%     for x_idx=1:params.COLS_DESC
+%         for y_idx=1:params.ROWS_DESC
+%             tile_counter = (x_idx-1)*params.ROWS_DESC+y_idx;
+%
+%             % only run kypts+descriptors for specified indices
+%             if ~ismember(tile_counter,target_indices)
+%                 continue
+%             end
+%
+%             % get region, indexing column-wise
+%             ymin = tile_upperleft_y(y_idx);
+%             ymax = tile_upperleft_y(y_idx+1);
+%             xmin = tile_upperleft_x(x_idx);
+%             xmax = tile_upperleft_x(x_idx+1);
+%
+%             % create overlap region for calcuating features
+%             % will remove all points in the overlap region after calculation
+%             % but this avoids edge effects on any boundaries of
+%             ymin_overlap = floor(max(tile_upperleft_y(y_idx)-(params.OVERLAP/2)*(ymax-ymin),1));
+%             ymax_overlap = floor(min(tile_upperleft_y(y_idx+1)+(params.OVERLAP/2)*(ymax-ymin),size(img,1)));
+%             xmin_overlap = floor(max(tile_upperleft_x(x_idx)-(params.OVERLAP/2)*(xmax-xmin),1));
+%             xmax_overlap = floor(min(tile_upperleft_x(x_idx+1)+(params.OVERLAP/2)*(xmax-xmin),size(img,2)));
+%
+%             %Calculate the features on the larger (overlapping) regions
+%             img_cache(tile_counter) = img(ymin_overlap:ymax_overlap, xmin_overlap:xmax_overlap,:);
+%
+%         end
+%     end
+%
+%     clearvars img;
+% end
 
 
 tile_counter = 0; %create a manual counter to be used in the data partitioning
@@ -114,7 +117,7 @@ for x_idx=1:params.COLS_DESC
         disp(['Running on row ' num2str(y_idx) ' and col ' num2str(x_idx) ]);
         
         %Make sure the folders for the descriptor outputs exist:
-        descriptor_output_dir = fullfile(params.OUTPUTDIR,sprintf('%sround%03d_%s/',params.SAMPLE_NAME,run_num,params.REGISTERCHANNEL));
+        descriptor_output_dir = fullfile(params.OUTPUTDIR,sprintf('%sround%d_%s/',params.SAMPLE_NAME,run_num,params.REGISTERCHANNEL));
         if exist(descriptor_output_dir,'dir')==0
             mkdir(descriptor_output_dir);
         end
@@ -126,19 +129,19 @@ for x_idx=1:params.COLS_DESC
         xmax = tile_upperleft_x(x_idx+1);
         
         %Calculate the features on the larger (overlapping) regions
-        if length(img_cache) > 0
-            tile_img = img_cache(tile_counter);
-        else
-            % create overlap region for calcuating features
-            % will remove all points in the overlap region after calculation
-            % but this avoids edge effects on any boundaries of
-            ymin_overlap = floor(max(tile_upperleft_y(y_idx)-(params.OVERLAP/2)*(ymax-ymin),1));
-            ymax_overlap = floor(min(tile_upperleft_y(y_idx+1)+(params.OVERLAP/2)*(ymax-ymin),size(img,1)));
-            xmin_overlap = floor(max(tile_upperleft_x(x_idx)-(params.OVERLAP/2)*(xmax-xmin),1));
-            xmax_overlap = floor(min(tile_upperleft_x(x_idx+1)+(params.OVERLAP/2)*(xmax-xmin),size(img,2)));
-
-            tile_img = img(ymin_overlap:ymax_overlap, xmin_overlap:xmax_overlap,:);
-        end
+        %         if length(img_cache) > 0
+        %             tile_img = img_cache(tile_counter);
+        %         else
+        % create overlap region for calcuating features
+        % will remove all points in the overlap region after calculation
+        % but this avoids edge effects on any boundaries of
+        ymin_overlap = floor(max(tile_upperleft_y(y_idx)-(params.OVERLAP/2)*(ymax-ymin),1));
+        ymax_overlap = floor(min(tile_upperleft_y(y_idx+1)+(params.OVERLAP/2)*(ymax-ymin),size(img,1)));
+        xmin_overlap = floor(max(tile_upperleft_x(x_idx)-(params.OVERLAP/2)*(xmax-xmin),1));
+        xmax_overlap = floor(min(tile_upperleft_x(x_idx+1)+(params.OVERLAP/2)*(xmax-xmin),size(img,2)));
+        
+        tile_img = img(ymin_overlap:ymax_overlap, xmin_overlap:xmax_overlap,:);
+        %         end
         
         outputfilename = fullfile(descriptor_output_dir, ...
             [num2str(ymin) '-' num2str(ymax) '_' num2str(xmin) '-' num2str(xmax) '.mat']);
@@ -161,8 +164,14 @@ for x_idx=1:params.COLS_DESC
         %needs to be noted. The 3DSIFT code treats x as the 0th
         %index (ie, the vertical dimension) whereas I am used to saying y
         %is the vertical direction.  This next bit of code both switches
-        %the x and y back to my convention while also putting
-        %the discovered keypoints back into global coodinates
+        %the x and y back to my convention
+        
+        %Any coordinates less than these can be discarded
+        margin_xmin = xmin - xmin_overlap;
+        margin_ymin = ymin - ymin_overlap;
+        %These are the coords above the normal xmax:xmin, ymin:ymax bounds
+        margin_xmax = size(tile_img,2)-(xmax_overlap-xmax);
+        margin_ymax = size(tile_img,1)-(ymax_overlap-ymax);
         
         indices_to_remove = [];
         for key_idx=1:length(keys)
@@ -170,29 +179,38 @@ for x_idx=1:params.COLS_DESC
             temp_key.y = keys{key_idx}.x;
             temp_key.x = keys{key_idx}.y;
             
-            if temp_key.y < params.OVERLAP/2 || ...
-               temp_key.x < params.OVERLAP/2 || ...
-               temp_key.y > ymax - ymin || ...
-               temp_key.x > xmax - xmin
-               
+            %If the point is taken from the overlapping region, we can
+            %ignore. This is mainly just to avoid edge effects in
+            %calculating keypoints and descriptor
+            if temp_key.y <= margin_ymin || temp_key.x <= margin_xmin || ...
+                    temp_key.y > margin_ymax || temp_key.x > margin_xmax
+                
                 indices_to_remove = [indices_to_remove key_idx];
             else
                 %set the new key coords:
-                keys{key_idx}.y = temp_key.y;
-                keys{key_idx}.x = temp_key.x;
+                %Keep all the points relative to xmin and xmax by
+                %subtracting the margin_xmin and margin_xmax
+                %this is because registerWithDescriptors uses xmin and xmax
+                keys{key_idx}.y = temp_key.y - margin_ymin;
+                keys{key_idx}.x = temp_key.x - margin_xmin;
+                
+                if keys{key_idx}.y>(ymax-ymin+1)|| keys{key_idx}.x>(xmax-xmin+1)
+                   error('Something was not right with the indexing in the tile');
+                end
             end
         end
         
         %Remove any keys that were in the overlapping region.
-%         keys{indices_to_remove} = [];
-%         fprintf('Removed %i keypoints from the overlapping region\n',length(indices_to_remove));
+        %         keys{indices_to_remove} = [];
+        %         fprintf('Removed %i keypoints from the overlapping region\n',length(indices_to_remove));
         final_indices = ones(length(keys),1);
         final_indices(indices_to_remove)=0;
         keys = keys(logical(final_indices));
-        fprintf('Removed %i/%i keypoints from the overlapping region\n',length(indices_to_remove),length(keys));
-
-
-        save(outputfilename,'keys','ymin','xmin','ymax','xmax', 'params','run_num');
+        fprintf('Removed %i/%i keypoints from the excess overlapping region\n',length(indices_to_remove),length(keys));
+        
+        
+        save(outputfilename,'keys','ymin','xmin','ymax','xmax', 'params','run_num',...
+            'ymin_overlap','ymax_overlap', 'xmin_overlap','xmax_overlap');
         
         clear keys;
         
