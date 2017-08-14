@@ -3,10 +3,10 @@ function  out_img = save3DTif(imgvol, outputFileName)
     %SAVE3DTif: Load 3D a tif into a y,x,z stack
     %fname has to end in .tif
     %set the minimum to zero
-    imgvol = imgvol + min(min(min(imgvol)));
+    imgvol = imgvol + min(imgvol(:));
     
     %set the max to max uint16
-    imgvol = (imgvol/max(max(max(imgvol))))*(2^16-1);
+    imgvol = (imgvol/max(imgvol(:)))*(2^16-1);
     imgvol = uint16(imgvol);
     
     
