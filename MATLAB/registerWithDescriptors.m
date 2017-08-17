@@ -211,8 +211,8 @@ function registerWithDescriptors(moving_run)
                     %coordinates to the subvolume, so it needs to be adapted to global
                     %points
 
-                    keyM_total = [keyM_total; keyM(:,1) + ymin_moving, keyM(:,2) + xmin_moving, keyM(:,3) ];
-                    keyF_total = [keyF_total; keyF(:,1) + ymin_fixed, keyF(:,2) + xmin_fixed, keyF(:,3)];
+                    keyM_total = [keyM_total; keyM(:,1) + ymin_moving-1, keyM(:,2) + xmin_moving-1, keyM(:,3) ];
+                    keyF_total = [keyF_total; keyF(:,1) + ymin_fixed-1, keyF(:,2) + xmin_fixed-1, keyF(:,3)];
                 
                 catch
                     disp(['Cannot process sub-image index: ' num2str(y_idx) ' ' num2str(x_idx)])
@@ -243,6 +243,39 @@ function registerWithDescriptors(moving_run)
         keyF_total(remove_indices,:) = [];
         keyM_total(remove_indices,:) = [];
         clear remove_indices;
+    end
+    
+    %Do a global affine transform on the data and keypoints before
+    %doing the fine-resolution non-rigid warp
+    affine_tform = findAffineModel(keyM_total, keyF_total);
+    
+    %Warp the keyM features into the new space
+    rF = imref3d(size(imgFixed_total));
+    keyM_total_affine = [keyM_total, ones(size(keyM_total,1),1)]*affine_tform'; 
+    keyM_total=keyM_total_affine(:,1:3);
+    %Remove any keypoints which are now outside the bounds of the image
+    filtered_correspondence_indices = (keyM_total(:,1) <1 | keyM_total(:,2)<1 | keyM_total(:,3)<1 | ...
+                                       keyM_total(:,1) > size(imgFixed_total,1) | ...
+                                       keyM_total(:,2) > size(imgFixed_total,2) | ...
+                                       keyM_total(:,3) > size(imgFixed_total,3) );
+    fprintf('Losing %i features after affine warp\n',sum(filtered_correspondence_indices));
+    keyM_total(filtered_correspondence_indices,:) = [];
+    keyF_total(filtered_correspondence_indices,:) = [];
+    
+        
+    for c = 1:length(params.CHANNELS)
+        %Load the data to be warped
+        tic;
+        data_channel = params.CHANNELS{c};
+        fprintf('load 3D file for affine transform on %s channel\n',data_channel);
+        filename = fullfile(params.INPUTDIR,sprintf('%sround%03d_%s.tif',params.SAMPLE_NAME,params.MOVING_RUN,data_channel));
+        imgToWarp = load3DTif(filename);
+        toc;
+        
+        output_affine_filename = fullfile(params.OUTPUTDIR,sprintf('%sround%03d_%s_affine.tif',...
+                        params.SAMPLE_NAME,params.MOVING_RUN,data_channel));
+        imgMoving_total_affine = imwarp(imgToWarp,affine3d(affine_tform'),'OutputView',rF);
+        save3DTif(imgMoving_total_affine,output_affine_filename);
     end
     
     disp('set up cluster and parpool')
@@ -281,10 +314,10 @@ function registerWithDescriptors(moving_run)
     %created
     for c = 1:length(params.CHANNELS)
         %Load the data to be warped
-        disp('load 3D file to be moved')
+        disp('load 3D file to be warped')
         tic;
         data_channel = params.CHANNELS{c};
-        filename = fullfile(params.INPUTDIR,sprintf('%sround%03d_%s.tif',params.SAMPLE_NAME,params.MOVING_RUN,data_channel));
+        filename = fullfile(params.INPUTDIR,sprintf('%sround%03d_%s_affine.tif',params.SAMPLE_NAME,params.MOVING_RUN,data_channel));
         imgToWarp = load3DTif(filename);
         toc;
         
