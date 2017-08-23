@@ -247,21 +247,31 @@ function registerWithDescriptors(moving_run)
     
     %Do a global affine transform on the data and keypoints before
     %doing the fine-resolution non-rigid warp
-    affine_tform = findAffineModel(keyM_total, keyF_total);
+   
+    %Because of the annoying switching between XY/YX conventions, 
+    %we have to switch XY components for the affine calcs, then switch back
+    keyM_total_switch = keyM_total(:,[2 1 3]);
+    keyF_total_switch = keyF_total(:,[2 1 3]);
+    affine_tform = findAffineModel(keyM_total_switch, keyF_total_switch);
     
     %Warp the keyM features into the new space
     rF = imref3d(size(imgFixed_total));
-    keyM_total_affine = [keyM_total, ones(size(keyM_total,1),1)]*affine_tform'; 
+    %Key total_affine is now with the switched XY
+    keyM_total_affine = [keyM_total_switch, ones(size(keyM_total_switch,1),1)]*affine_tform'; 
+    %keyM_total is now switched 
     keyM_total=keyM_total_affine(:,1:3);
+    %keyF_total = keyF_total_switch;
     %Remove any keypoints which are now outside the bounds of the image
     filtered_correspondence_indices = (keyM_total(:,1) <1 | keyM_total(:,2)<1 | keyM_total(:,3)<1 | ...
-                                       keyM_total(:,1) > size(imgFixed_total,1) | ...
-                                       keyM_total(:,2) > size(imgFixed_total,2) | ...
+                                       keyM_total(:,1) > size(imgFixed_total,2) | ...
+                                       keyM_total(:,2) > size(imgFixed_total,1) | ...
                                        keyM_total(:,3) > size(imgFixed_total,3) );
     fprintf('Losing %i features after affine warp\n',sum(filtered_correspondence_indices));
     keyM_total(filtered_correspondence_indices,:) = [];
     keyF_total(filtered_correspondence_indices,:) = [];
     
+    %switch keyM back to the other format for the TPS calcs
+    keyM_total = keyM_total(:,[2 1 3]);
         
     for c = 1:length(params.CHANNELS)
         %Load the data to be warped
@@ -287,6 +297,7 @@ function registerWithDescriptors(moving_run)
     output_TPS_filename = fullfile(params.OUTPUTDIR,sprintf('TPSMap_%sround%03d.mat',params.SAMPLE_NAME,params.MOVING_RUN));
     if exist(output_TPS_filename,'file')==0
 %        [in1D_total,out1D_total] = TPS3DWarpWhole(keyM_total,keyF_total, ...
+        
         [in1D_total,out1D_total] = TPS3DWarpWholeInParallel(keyM_total,keyF_total, ...
                             size(imgMoving_total), size(imgFixed_total));
         disp('save TPS file')
@@ -317,7 +328,7 @@ function registerWithDescriptors(moving_run)
         disp('load 3D file to be warped')
         tic;
         data_channel = params.CHANNELS{c};
-        filename = fullfile(params.INPUTDIR,sprintf('%sround%03d_%s_affine.tif',params.SAMPLE_NAME,params.MOVING_RUN,data_channel));
+        filename = fullfile(params.OUTPUTDIR,sprintf('%sround%03d_%s_affine.tif',params.SAMPLE_NAME,params.MOVING_RUN,data_channel));
         imgToWarp = load3DTif(filename);
         toc;
         
